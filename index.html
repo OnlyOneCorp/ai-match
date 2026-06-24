@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Match — Today's AI, just for you</title>
+<meta name="description" content="Don't review every new AI model. Just click — and get matched with the right one." />
+
+<!-- ============================================================ -->
+<!-- ANALYTICS (Google Analytics 4) — turns on automatically       -->
+<!-- Just set CONFIG.ga4MeasurementId = "G-XXXXXXX" in models.js.   -->
+<!-- Nothing else to edit. Leave it "" to keep analytics off.      -->
+<!-- In GA4, enable "Google signals" for age/gender (estimated,    -->
+<!-- aggregate-only, never per-person). Per-model button clicks are -->
+<!-- sent as "select_model" events (see the script near </body>).  -->
+<!-- ============================================================ -->
+<script src="./models.js"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function(){ dataLayer.push(arguments); };
+  (function(){
+    var id = (window.CONFIG || {}).ga4MeasurementId;
+    if(!id) return;                         // stays off until you set an ID
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
+    document.head.appendChild(s);
+    gtag('js', new Date());
+    gtag('config', id);
+  })();
+</script>
+
+<style>
+  :root{
+    --bg:#ffffff; --bg-soft:#f5f5f7; --ink:#1d1d1f; --muted:#6e6e73;
+    --line:#e7e7ec; --accent:#ff5630; --accent-press:#e0431d;
+    --accent-tint:rgba(255,86,48,.10);
+    --radius:20px; --maxw:1080px;
+    --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue","Apple SD Gothic Neo","Pretendard","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;line-height:1.5;}
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid transparent;transition:border-color .3s;}
+  header.scrolled{border-bottom-color:var(--line);}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:56px;}
+  .brand{font-weight:600;font-size:19px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px;}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);display:inline-block;}
+  .lang-btn{border:1px solid var(--line);background:transparent;color:var(--ink);padding:7px 15px;border-radius:980px;font-size:13px;font-weight:500;transition:background .2s,border-color .2s;}
+  .lang-btn:hover{background:var(--bg-soft);}
+
+  .hero{padding:96px 0 72px;text-align:center;}
+  .hero h1{font-size:clamp(40px,7vw,76px);line-height:1.04;letter-spacing:-.035em;font-weight:650;margin:0 auto;max-width:14ch;}
+  .hero h1 .accent{color:var(--accent);}
+  .hero p.sub{font-size:clamp(17px,2.2vw,22px);color:var(--muted);font-weight:400;max-width:30ch;margin:22px auto 0;letter-spacing:-.01em;}
+  .cta-row{margin-top:36px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+  .btn{border:none;border-radius:980px;font-size:16px;font-weight:500;padding:14px 26px;transition:transform .12s,background .2s,box-shadow .2s;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:var(--accent-press);}
+  .btn-primary:active{transform:scale(.97);}
+  .btn-ghost{background:var(--bg-soft);color:var(--ink);}
+  .btn-ghost:hover{background:#ececef;}
+  .hero .meta{margin-top:40px;}
+  .hero .meta.updated{margin-top:10px;}
+  .hero .meta span{margin:0 10px;}
+
+  section.block{padding:88px 0;}
+  section.soft{background:var(--bg-soft);}
+  .sec-head{text-align:center;max-width:30ch;margin:0 auto 44px;}
+  .sec-head h2{font-size:clamp(28px,4.4vw,46px);letter-spacing:-.03em;font-weight:650;margin:14px 0 0;line-height:1.08;}
+  .sec-head p{color:var(--muted);margin:14px auto 0;font-size:17px;max-width:38ch;}
+
+  .matcher{max-width:680px;margin:0 auto;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:36px 32px 30px;box-shadow:0 1px 0 rgba(0,0,0,.02);}
+  .step-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .step-count{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.08em;}
+  .dots{display:flex;gap:7px;}
+  .dots i{width:7px;height:7px;border-radius:50%;background:var(--line);transition:background .25s,transform .25s;}
+  .dots i.on{background:var(--accent);}
+  .dots i.done{background:var(--ink);}
+  .q{font-size:clamp(22px,3vw,28px);letter-spacing:-.02em;font-weight:600;margin:10px 0 4px;}
+  .q-hint{color:var(--muted);font-size:14px;margin-bottom:22px;}
+  .opts{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .opt{border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:16px 18px;font-size:16px;font-weight:500;text-align:left;color:var(--ink);display:flex;align-items:center;gap:12px;transition:border-color .15s,background .15s,transform .1s;}
+  .opt:hover{border-color:#c9c9d0;background:#fafafb;}
+  .opt:active{transform:scale(.985);}
+  .opt .ico{font-size:20px;line-height:1;}
+  .step-foot{display:flex;justify-content:space-between;align-items:center;margin-top:22px;}
+  .link-btn{background:none;border:none;color:var(--muted);font-size:14px;padding:6px 4px;}
+  .link-btn:hover{color:var(--ink);}
+  .link-btn.accent{color:var(--accent);font-weight:500;}
+
+  .result{max-width:680px;margin:28px auto 0;}
+  .result.hidden{display:none;}
+  @media (prefers-reduced-motion: no-preference){
+    .reveal{animation:rise .5s cubic-bezier(.2,.7,.2,1) both;}
+    @keyframes rise{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:none;}}
+  }
+  .match-card{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:30px;box-shadow:0 20px 60px -28px rgba(255,86,48,.45);position:relative;overflow:hidden;}
+  .match-card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--accent);}
+  .match-tag{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+  .match-name{font-size:32px;letter-spacing:-.03em;font-weight:680;margin:8px 0 2px;}
+  .match-maker{color:var(--muted);font-size:14px;}
+  .match-blurb{font-size:17px;margin:16px 0 6px;letter-spacing:-.01em;}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 22px;}
+  .badge{font-size:12px;padding:5px 11px;border-radius:980px;background:var(--bg-soft);color:var(--muted);font-weight:500;}
+  .badge.free{background:#e8f7ee;color:#147a3d;}
+  .badge.oss{background:#eef0ff;color:#3a40c4;}
+  .alts{margin-top:26px;}
+  .alts h4{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:500;}
+  .alt-row{display:flex;gap:12px;flex-wrap:wrap;}
+  .alt{flex:1;min-width:200px;border:1px solid var(--line);border-radius:14px;padding:16px 18px;text-decoration:none;display:block;transition:border-color .15s,transform .1s;}
+  .alt:hover{border-color:#c9c9d0;}
+  .alt:active{transform:scale(.99);}
+  .alt b{font-size:16px;letter-spacing:-.01em;}
+  .alt span{display:block;color:var(--muted);font-size:13px;margin-top:3px;}
+  .restart{display:block;margin:22px auto 0;}
+
+  .filters{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-bottom:34px;}
+  .chip{border:1px solid var(--line);background:var(--bg);border-radius:980px;padding:8px 16px;font-size:14px;font-weight:500;color:var(--ink);transition:.18s;}
+  .chip:hover{background:var(--bg-soft);}
+  .chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:16px;}
+  .card{border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--bg);text-decoration:none;display:flex;flex-direction:column;min-height:172px;transition:transform .14s,border-color .14s,box-shadow .14s;}
+  .card:hover{transform:translateY(-3px);border-color:#d4d4db;box-shadow:0 14px 30px -20px rgba(0,0,0,.25);}
+  .card .top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+  .card .nm{font-size:18px;font-weight:600;letter-spacing:-.02em;}
+  .card .mk{color:var(--muted);font-size:12px;white-space:nowrap;}
+  .card .bl{color:#3a3a3e;font-size:14px;margin:10px 0 14px;flex:1;}
+  .card .foot{display:flex;align-items:center;justify-content:space-between;}
+  .card .tags{display:flex;gap:6px;}
+  .mini{font-size:11px;padding:3px 8px;border-radius:980px;font-weight:600;letter-spacing:.02em;}
+  .mini.free{background:#e8f7ee;color:#147a3d;}
+  .mini.oss{background:#eef0ff;color:#3a40c4;}
+  .go{font-size:13px;color:var(--accent);font-weight:600;}
+  .empty{text-align:center;color:var(--muted);padding:40px 0;}
+
+  footer{border-top:1px solid var(--line);padding:40px 0 56px;background:var(--bg-soft);}
+  footer .wrap{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center;}
+  footer p{color:var(--muted);font-size:13px;max-width:62ch;margin:0;}
+  .admin-link{font-family:var(--mono);font-size:12px;color:#b8b8be;background:none;border:none;}
+  .admin-link:hover{color:var(--muted);}
+
+  .ad-slot{display:none;margin:34px auto;max-width:680px;text-align:center;}
+
+  .admin{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.4);display:none;}
+  .admin.show{display:block;}
+  .admin-panel{position:absolute;top:0;right:0;height:100%;width:min(560px,100%);background:var(--bg);box-shadow:-20px 0 60px -20px rgba(0,0,0,.4);padding:26px;overflow-y:auto;}
+  .admin-panel h3{margin:0 0 4px;font-size:22px;letter-spacing:-.02em;}
+  .admin-panel .x{position:absolute;top:20px;right:22px;border:none;background:none;font-size:24px;color:var(--muted);}
+  .admin-sub{color:var(--muted);font-size:13px;margin:0 0 22px;}
+  .tabs{display:flex;gap:6px;margin:18px 0;}
+  .tab{flex:1;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px;font-size:13px;font-weight:600;}
+  .tab.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;letter-spacing:.02em;}
+  .field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--ink);}
+  .field textarea{resize:vertical;min-height:60px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .note{background:var(--bg-soft);border-radius:12px;padding:14px 16px;font-size:13px;color:#444;margin:16px 0;line-height:1.55;}
+  .note b{color:var(--ink);}
+  .note code{font-family:var(--mono);font-size:12px;background:#e9e9ee;padding:1px 5px;border-radius:5px;}
+  .admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+  .sm{font-size:14px;padding:11px 18px;}
+  .pill-list{margin:10px 0 0;}
+  .pill-list .pl{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:7px;font-size:14px;}
+  .pl .del{border:none;background:none;color:var(--accent);font-size:13px;font-weight:600;}
+  .login-box{margin-top:24px;}
+  .hidden{display:none;}
+
+  @media (max-width:560px){
+    .opts{grid-template-columns:1fr;}
+    .matcher{padding:28px 20px 24px;}
+    .hero{padding:64px 0 48px;}
+    section.block{padding:64px 0;}
+  }
+</style>
+</head>
+<body>
+
+<header id="hdr">
+  <div class="wrap nav">
+    <div class="brand"><span class="dot"></span>AI Match</div>
+    <button class="lang-btn" id="langBtn">한국어</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <h1 data-i18n="hero_h1"></h1>
+    <p class="sub" data-i18n="hero_sub"></p>
+    <div class="cta-row">
+      <button class="btn btn-primary" id="startBtn" data-i18n="hero_cta"></button>
+      <a class="btn btn-ghost" href="#browse" data-i18n="hero_browse"></a>
+    </div>
+    <p class="eyebrow meta">
+      <span data-i18n="meta_updated"></span>·<span data-i18n="meta_count"></span>·<span data-i18n="meta_free"></span>
+    </p>
+    <p class="eyebrow meta updated" id="updatedLine"></p>
+  </div>
+</section>
+
+<section class="block soft" id="match">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow" data-i18n="match_eyebrow"></span>
+      <h2 data-i18n="match_title"></h2>
+      <p data-i18n="match_desc"></p>
+    </div>
+    <div class="matcher" id="matcher">
+      <div class="step-top">
+        <span class="step-count" id="stepCount"></span>
+        <div class="dots" id="dots"></div>
+      </div>
+      <h3 class="q" id="qText"></h3>
+      <p class="q-hint" id="qHint"></p>
+      <div class="opts" id="opts"></div>
+      <div class="step-foot">
+        <button class="link-btn" id="backBtn" data-i18n="back"></button>
+        <button class="link-btn accent hidden" id="skipBtn" data-i18n="skip"></button>
+      </div>
+    </div>
+    <div class="ad-slot" id="ad-1"></div>
+    <div class="result hidden" id="result"></div>
+  </div>
+</section>
+
+<section class="block" id="browse">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow" data-i18n="browse_eyebrow"></span>
+      <h2 data-i18n="browse_title"></h2>
+      <p data-i18n="browse_desc"></p>
+    </div>
+    <div class="filters" id="filters"></div>
+    <div class="grid" id="grid"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p data-i18n="footer_disc"></p>
+    <a class="admin-link" id="contactLink" href="mailto:onlyonecorpceo@gmail.com?subject=AI%20Match%20inquiry" data-i18n="contact">contact</a>
+  </div>
+</footer>
+
+<div class="admin" id="admin">
+  <div class="admin-panel">
+    <button class="x" id="adminClose">×</button>
+    <div id="adminLogin">
+      <h3 data-i18n="adm_login_t"></h3>
+      <p class="admin-sub" data-i18n="adm_login_s"></p>
+      <div class="field login-box"><label data-i18n="adm_pw"></label><input type="password" id="adminPw" /></div>
+      <button class="btn btn-primary sm" id="adminEnter" data-i18n="adm_enter"></button>
+      <p class="note" id="adminPwErr" style="display:none;color:var(--accent);"></p>
+    </div>
+    <div id="adminConsole" class="hidden">
+      <h3 data-i18n="adm_t"></h3>
+      <p class="admin-sub" data-i18n="adm_s"></p>
+      <div class="tabs">
+        <button class="tab active" data-tab="models" data-i18n="adm_tab_models"></button>
+        <button class="tab" data-tab="stats" data-i18n="adm_tab_stats"></button>
+        <button class="tab" data-tab="auto" data-i18n="adm_tab_auto"></button>
+      </div>
+      <div class="tabpane" id="pane-models">
+        <p class="note" data-i18n="adm_models_note"></p>
+        <div class="row2">
+          <div class="field"><label data-i18n="adm_f_name"></label><input id="m_name"/></div>
+          <div class="field"><label data-i18n="adm_f_maker"></label><input id="m_maker"/></div>
+        </div>
+        <div class="field"><label data-i18n="adm_f_cats"></label><input id="m_cats" placeholder="chat, writing, coding"/></div>
+        <div class="field"><label data-i18n="adm_f_link"></label><input id="m_link" placeholder="https://..."/></div>
+        <div class="row2">
+          <div class="field"><label data-i18n="adm_f_type"></label><select id="m_type"><option value="official">official</option><option value="download">download</option></select></div>
+          <div class="field"><label data-i18n="adm_f_strengths"></label><input id="m_strengths" placeholder="quality, speed"/></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label data-i18n="adm_f_free"></label><select id="m_free"><option value="true">free tier</option><option value="false">paid only</option></select></div>
+          <div class="field"><label data-i18n="adm_f_oss"></label><select id="m_oss"><option value="false">closed</option><option value="true">open-source</option></select></div>
+        </div>
+        <div class="field"><label data-i18n="adm_f_blurb_en"></label><textarea id="m_blurb_en"></textarea></div>
+        <div class="field"><label data-i18n="adm_f_blurb_ko"></label><textarea id="m_blurb_ko"></textarea></div>
+        <button class="btn btn-primary sm" id="m_add" data-i18n="adm_add"></button>
+        <h4 style="font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--muted);margin:26px 0 8px;"><span data-i18n="adm_current"></span> (<span id="m_count"></span>)</h4>
+        <div class="pill-list" id="m_list"></div>
+        <div class="admin-actions">
+          <button class="btn btn-primary sm" id="m_export" data-i18n="adm_export"></button>
+          <button class="btn btn-ghost sm" id="m_copy" data-i18n="adm_copy"></button>
+        </div>
+        <p class="note" data-i18n="adm_export_note"></p>
+      </div>
+      <div class="tabpane hidden" id="pane-stats">
+        <p class="note" data-i18n="adm_stats_note"></p>
+        <div class="row2">
+          <div class="field"><label data-i18n="adm_s_views"></label><input id="s_views" placeholder="0"/></div>
+          <div class="field"><label data-i18n="adm_s_visitors"></label><input id="s_visitors" placeholder="0"/></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label data-i18n="adm_s_male"></label><input id="s_male" placeholder="%"/></div>
+          <div class="field"><label data-i18n="adm_s_female"></label><input id="s_female" placeholder="%"/></div>
+        </div>
+        <div class="field"><label data-i18n="adm_s_top"></label><input id="s_top" placeholder="GPT-5.5, Claude Opus 4.8, Suno v4.5"/></div>
+        <div class="admin-actions"><button class="btn btn-primary sm" id="s_save" data-i18n="adm_s_save"></button></div>
+        <p class="note" data-i18n="adm_stats_legal"></p>
+      </div>
+      <div class="tabpane hidden" id="pane-auto">
+        <p class="note" data-i18n="adm_auto_note"></p>
+        <p class="note" data-i18n="adm_auto_how"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const I18N = {
+  en:{
+    hero_h1_html:'Today\u2019s AI,<br><span class="accent">just for you.</span>',
+    hero_sub:'Don\u2019t review every new AI model out there. Just click.',
+    hero_cta:'Find my AI', hero_browse:'Browse all',
+    meta_updated:'Reviewed weekly', meta_count:'40+ models', meta_free:'Free to use',
+    updated_label:'Updated', contact:'Contact',
+    match_eyebrow:'The match', match_title:'Four taps to your tool.',
+    match_desc:'Answer what fits. The last one is optional \u2014 skip it any time.',
+    back:'\u2190 Back', skip:'Skip this',
+    browse_eyebrow:'Everything', browse_title:'Browse every model.',
+    browse_desc:'Filter by what you need. Each card opens the official site, or the download page for open-source.',
+    footer_disc:'AI Match is an independent guide. Some outbound links may be affiliate links. The AI landscape changes fast \u2014 details and pricing are reviewed weekly but may not be current. Always check the official site before subscribing.',
+    open_official:'Open official site \u2192', open_download:'Download / run it \u2192',
+    your_match:'Your match', why_alts:'Also worth a look', restart:'Start over',
+    free:'Free', oss:'Open-source', paid:'Paid',
+    no_match_t:'No open-source pick fits that combo yet.',
+    no_match_s:'Open local options are still thin here \u2014 these are the easiest online tools instead:',
+    tasks:{chat:'Everyday chat',writing:'Writing & content',coding:'Coding',images:'Image generation',video:'Video',music:'Music & audio',research:'Research & study',design:'Design & slides'},
+    q1:'What are you trying to do?', q1h:'Pick the one closest to your main use.',
+    q2:'What\u2019s your budget?', q2h:'', q2a:'Free only', q2b:'Paid is fine',
+    q3:'Where do you want to run it?', q3h:'', q3a:'Easiest \u2014 just use it online', q3b:'On my own machine (private / open-source)',
+    q4:'What matters most?', q4h:'Optional \u2014 helps fine-tune the pick.',
+    q4a:'Top quality', q4b:'Fastest', q4c:'Cheapest', q4d:'Most creative',
+    filter_all:'All',
+    cat:{chat:'Chat',writing:'Writing',coding:'Coding',images:'Images',video:'Video',music:'Music',research:'Research',design:'Design',productivity:'Productivity'},
+    adm_login_t:'Admin', adm_login_s:'Enter the password set in models.js (CONFIG.adminPassword).',
+    adm_pw:'Password', adm_enter:'Enter', adm_pw_err:'Wrong password.',
+    adm_t:'Admin console', adm_s:'Manage models, stats, and weekly updates.',
+    adm_tab_models:'Models', adm_tab_stats:'Stats', adm_tab_auto:'Auto-update',
+    adm_models_note:'Add or remove models here, then <b>Copy</b> or <b>Download</b> the updated <code>models.js</code> and replace the old one in your repo. (A static page can\u2019t save by itself.)',
+    adm_f_name:'Name (include version, e.g. \u201CClaude Opus 4.8\u201D)', adm_f_maker:'Maker', adm_f_cats:'Categories (comma-separated)',
+    adm_f_link:'Link (paste your affiliate link here)', adm_f_type:'Button type', adm_f_strengths:'Strengths (comma-separated)',
+    adm_f_free:'Pricing', adm_f_oss:'Open-source', adm_f_blurb_en:'Blurb (English)', adm_f_blurb_ko:'Blurb (Korean)',
+    adm_add:'Add model', adm_current:'Current models', adm_export:'Download models.js', adm_copy:'Copy models.js',
+    adm_export_note:'Replace the old <code>models.js</code> in your GitHub repo with this file, then commit. Changes appear in ~1 minute.',
+    adm_stats_note:'Real view counts and <b>aggregate, estimated</b> gender/age come from Google Analytics 4. It turns on automatically once you set <code>CONFIG.ga4MeasurementId</code> in models.js \u2014 no other editing. Each model-button click is sent as a <code>select_model</code> event. Read the figures in your GA4 dashboard, then enter the headline numbers here to display them on the site.',
+    adm_s_views:'Total page views', adm_s_visitors:'Unique visitors', adm_s_male:'Male share', adm_s_female:'Female share',
+    adm_s_top:'Most-clicked models', adm_s_save:'Save stats',
+    adm_stats_legal:'<b>Note:</b> no tool can legally tell you an individual visitor\u2019s gender. GA4 gives only estimated, aggregated shares above a privacy threshold.',
+    adm_auto_note:'<b>Fully automatic discovery of new models isn\u2019t possible on a static site</b> \u2014 it needs a data source + build step. What ships instead: a free GitHub Action that runs weekly and opens a \u201CWeekly model review\u201D issue, which emails you automatically.',
+    adm_auto_how:'When you get that email: open AI Match \u2192 admin \u2192 Models, add/edit what changed, Download <code>models.js</code>, replace it in the repo, and commit. The file <code>.github/workflows/weekly-model-review.yml</code> controls the schedule.',
+    saved:'Saved \u2713'
+  },
+  ko:{
+    hero_h1_html:'\uC624\uB298, \uB531 \uB9DE\uB294<br><span class="accent">\uB2F9\uC2E0\uC758 AI.</span>',
+    hero_sub:'\uB9E4\uC77C \uC313\uC774\uB294 AI \uBAA8\uB378\uC744 \uB2E4 \uAC80\uD1A0\uD558\uC9C0 \uB9C8\uC138\uC694. \uADF8\uB0E5 \uD074\uB9AD\uD558\uC138\uC694.',
+    hero_cta:'\uB0B4 AI \uCC3E\uAE30', hero_browse:'\uC804\uCCB4 \uBCF4\uAE30',
+    meta_updated:'\uB9E4\uC8FC \uC5C5\uB370\uC774\uD2B8', meta_count:'40\uAC1C \uC774\uC0C1 \uBAA8\uB378', meta_free:'\uBB34\uB8CC \uC774\uC6A9 \uAC00\uB2A5',
+    updated_label:'\uC5C5\uB370\uC774\uD2B8', contact:'\uBB38\uC758',
+    match_eyebrow:'\uB9DE\uCDA4 \uCD94\uCC9C', match_title:'\uB124 \uBC88\uC758 \uD0ED\uC774\uBA74 \uB05D.',
+    match_desc:'\uD574\uB2F9\uB418\uB294 \uAC78 \uACE8\uB77C\uC8FC\uC138\uC694. \uB9C8\uC9C0\uB9C9 \uC9C8\uBB38\uC740 \uC120\uD0DD\uC774\uB77C \uC5B8\uC81C\uB4E0 \uAC74\uB108\uB6F8 \uC218 \uC788\uC5B4\uC694.',
+    back:'\u2190 \uC774\uC804', skip:'\uAC74\uB108\uB6F0\uAE30',
+    browse_eyebrow:'\uC804\uCCB4 \uBAA9\uB85D', browse_title:'\uBAA8\uB4E0 \uBAA8\uB378 \uBCF4\uAE30.',
+    browse_desc:'\uD544\uC694\uC5D0 \uB9DE\uAC8C \uAC78\uB7EC\uBCF4\uC138\uC694. \uAC01 \uCE74\uB4DC\uB294 \uACF5\uC2DD \uC0AC\uC774\uD2B8\uB85C, \uC624\uD508\uC18C\uC2A4\uB294 \uB2E4\uC6B4\uB85C\uB4DC \uD398\uC774\uC9C0\uB85C \uC5F0\uACB0\uB429\uB2C8\uB2E4.',
+    footer_disc:'AI Match\uB294 \uB3C5\uB9BD\uC801\uC778 \uAC00\uC774\uB4DC\uC785\uB2C8\uB2E4. \uC77C\uBD80 \uC678\uBD80 \uB9C1\uD06C\uB294 \uC81C\uD734 \uB9C1\uD06C\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4. AI \uD658\uACBD\uC740 \uBE60\uB974\uAC8C \uBC14\uB00C\uBBC0\uB85C \uC138\uBD80 \uC815\uBCF4\uC640 \uAC00\uACA9\uC740 \uB9E4\uC8FC \uC810\uAC80\uD558\uC9C0\uB9CC \uCD5C\uC2E0\uC774 \uC544\uB2D0 \uC218 \uC788\uC5B4\uC694. \uAD6C\uB3C5 \uC804\uC5D0 \uBC18\uB4DC\uC2DC \uACF5\uC2DD \uC0AC\uC774\uD2B8\uB97C \uD655\uC778\uD558\uC138\uC694.',
+    open_official:'\uACF5\uC2DD \uC0AC\uC774\uD2B8 \uC5F4\uAE30 \u2192', open_download:'\uB2E4\uC6B4\uB85C\uB4DC / \uC2E4\uD589 \u2192',
+    your_match:'\uB2F9\uC2E0\uC758 \uB9DE\uCDA4', why_alts:'\uC774\uAC83\uB3C4 \uCD94\uCC9C', restart:'\uB2E4\uC2DC \uD558\uAE30',
+    free:'\uBB34\uB8CC', oss:'\uC624\uD508\uC18C\uC2A4', paid:'\uC720\uB8CC',
+    no_match_t:'\uC774 \uC870\uD569\uC5D0 \uB9DE\uB294 \uC624\uD508\uC18C\uC2A4 \uC120\uD0DD\uC9C0\uAC00 \uC544\uC9C1 \uC5C6\uC5B4\uC694.',
+    no_match_s:'\uC9C1\uC811 \uC2E4\uD589\uD560 \uC218 \uC788\uB294 \uC635\uC158\uC774 \uC544\uC9C1 \uBD80\uC871\uD574\uC694 \u2014 \uB300\uC2E0 \uAC00\uC7A5 \uC27D\uAC8C \uC4F8 \uC218 \uC788\uB294 \uC628\uB77C\uC778 \uB3C4\uAD6C\uC785\uB2C8\uB2E4:',
+    tasks:{chat:'\uC77C\uC0C1 \uB300\uD654',writing:'\uAE00\uC4F0\uAE30 \u00B7 \uCF58\uD150\uCE20',coding:'\uCF54\uB529',images:'\uC774\uBBF8\uC9C0 \uC0DD\uC131',video:'\uC601\uC0C1',music:'\uC74C\uC545 \u00B7 \uC624\uB514\uC624',research:'\uB9AC\uC11C\uCE58 \u00B7 \uACF5\uBD80',design:'\uB514\uC790\uC778 \u00B7 \uC2AC\uB77C\uC774\uB4DC'},
+    q1:'\uBB34\uC5C7\uC744 \uD558\uB824\uACE0 \uD558\uC2DC\uB098\uC694?', q1h:'\uC8FC\uC694 \uC6A9\uB3C4\uC640 \uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uAC78 \uACE8\uB77C\uC8FC\uC138\uC694.',
+    q2:'\uC608\uC0B0\uC740 \uC5B4\uB5BB\uAC8C \uB418\uC138\uC694?', q2h:'', q2a:'\uBB34\uB8CC\uB9CC', q2b:'\uC720\uB8CC\uB3C4 \uAD1C\uCC2E\uC544\uC694',
+    q3:'\uC5B4\uB514\uC11C \uC2E4\uD589\uD558\uACE0 \uC2F6\uC73C\uC138\uC694?', q3h:'', q3a:'\uAC00\uC7A5 \uC27D\uAC8C \u2014 \uC628\uB77C\uC778\uC5D0\uC11C \uBC14\uB85C', q3b:'\uB0B4 \uCEF4\uD4E8\uD130\uC5D0\uC11C (\uD504\uB77C\uC774\uBC84\uC2DC / \uC624\uD508\uC18C\uC2A4)',
+    q4:'\uAC00\uC7A5 \uC911\uC694\uD55C \uAC74?', q4h:'\uC120\uD0DD \uC0AC\uD56D \u2014 \uCD94\uCC9C\uC744 \uB354 \uC815\uAD50\uD558\uAC8C \uB9CC\uB4E4\uC5B4\uC694.',
+    q4a:'\uCD5C\uACE0 \uD488\uC9C8', q4b:'\uAC00\uC7A5 \uBE60\uB984', q4c:'\uAC00\uC7A5 \uC800\uB834', q4d:'\uAC00\uC7A5 \uCC3D\uC758\uC801',
+    filter_all:'\uC804\uCCB4',
+    cat:{chat:'\uB300\uD654',writing:'\uAE00\uC4F0\uAE30',coding:'\uCF54\uB529',images:'\uC774\uBBF8\uC9C0',video:'\uC601\uC0C1',music:'\uC74C\uC545',research:'\uB9AC\uC11C\uCE58',design:'\uB514\uC790\uC778',productivity:'\uC0DD\uC0B0\uC131'},
+    adm_login_t:'\uAD00\uB9AC\uC790', adm_login_s:'models.js\uC758 CONFIG.adminPassword\uC5D0 \uC124\uC815\uD55C \uBE44\uBC00\uBC88\uD638\uB97C \uC785\uB825\uD558\uC138\uC694.',
+    adm_pw:'\uBE44\uBC00\uBC88\uD638', adm_enter:'\uC785\uC7A5', adm_pw_err:'\uBE44\uBC00\uBC88\uD638\uAC00 \uD2C0\uB838\uC5B4\uC694.',
+    adm_t:'\uAD00\uB9AC\uC790 \uCF58\uC194', adm_s:'\uBAA8\uB378, \uD1B5\uACC4, \uC8FC\uAC04 \uC5C5\uB370\uC774\uD2B8\uB97C \uAD00\uB9AC\uD558\uC138\uC694.',
+    adm_tab_models:'\uBAA8\uB378', adm_tab_stats:'\uD1B5\uACC4', adm_tab_auto:'\uC790\uB3D9 \uC5C5\uB370\uC774\uD2B8',
+    adm_models_note:'\uC5EC\uAE30\uC11C \uBAA8\uB378\uC744 \uCD94\uAC00/\uC0AD\uC81C\uD55C \uB4A4 <b>\uBCF5\uC0AC</b> \uB610\uB294 <b>\uB2E4\uC6B4\uB85C\uB4DC</b>\uD574 \uC800\uC7A5\uC18C\uC758 \uAE30\uC874 <code>models.js</code>\uB97C \uAD50\uCCB4\uD558\uC138\uC694. (\uC815\uC801 \uD398\uC774\uC9C0\uB294 \uC2A4\uC2A4\uB85C \uC800\uC7A5\uD560 \uC218 \uC5C6\uC5B4\uC694.)',
+    adm_f_name:'\uC774\uB984 (\uBC84\uC804 \uD3EC\uD568, \uC608: \u201CClaude Opus 4.8\u201D)', adm_f_maker:'\uC81C\uC791\uC0AC', adm_f_cats:'\uCE74\uD14C\uACE0\uB9AC (\uC27C\uD45C\uB85C \uAD6C\uBD84)',
+    adm_f_link:'\uB9C1\uD06C (\uC81C\uD734 \uB9C1\uD06C\uB97C \uC5EC\uAE30 \uBD99\uC5EC\uB123\uC73C\uC138\uC694)', adm_f_type:'\uBC84\uD2BC \uC720\uD615', adm_f_strengths:'\uAC15\uC810 (\uC27C\uD45C\uB85C \uAD6C\uBD84)',
+    adm_f_free:'\uAC00\uACA9', adm_f_oss:'\uC624\uD508\uC18C\uC2A4', adm_f_blurb_en:'\uC124\uBA85 (\uC601\uC5B4)', adm_f_blurb_ko:'\uC124\uBA85 (\uD55C\uAD6D\uC5B4)',
+    adm_add:'\uBAA8\uB378 \uCD94\uAC00', adm_current:'\uD604\uC7AC \uBAA8\uB378', adm_export:'models.js \uB2E4\uC6B4\uB85C\uB4DC', adm_copy:'models.js \uBCF5\uC0AC',
+    adm_export_note:'GitHub \uC800\uC7A5\uC18C\uC758 \uAE30\uC874 <code>models.js</code>\uB97C \uC774 \uD30C\uC77C\uB85C \uAD50\uCCB4\uD558\uACE0 \uCEE4\uBC0B\uD558\uC138\uC694. \uC57D 1\uBD84 \uB4A4 \uBC18\uC601\uB429\uB2C8\uB2E4.',
+    adm_stats_note:'\uC2E4\uC81C \uC870\uD68C\uC218\uC640 <b>\uC9D1\uACC4\u00B7\uCD94\uC815</b> \uC131\uBCC4\u00B7\uC5F0\uB839\uC740 Google Analytics 4\uC5D0\uC11C \uB098\uC640\uC694. models.js\uC758 <code>CONFIG.ga4MeasurementId</code>\uB9CC \uCC44\uC6B0\uBA74 \uC790\uB3D9\uC73C\uB85C \uCF1C\uC838\uC694(\uB2E4\uB978 \uD3B8\uC9D1 \uBD88\uD544\uC694). \uAC01 \uBAA8\uB378 \uBC84\uD2BC \uD074\uB9AD\uC740 <code>select_model</code> \uC774\uBCA4\uD2B8\uB85C \uC804\uC1A1\uB3FC\uC694. GA4 \uB300\uC2DC\uBCF4\uB4DC\uC5D0\uC11C \uC218\uCE58\uB97C \uBCF8 \uB4A4 \uD575\uC2EC \uC218\uCE58\uB97C \uC5EC\uAE30 \uC785\uB825\uD558\uBA74 \uC0AC\uC774\uD2B8\uC5D0 \uD45C\uC2DC\uB429\uB2C8\uB2E4.',
+    adm_s_views:'\uCD1D \uD398\uC774\uC9C0\uBDF0', adm_s_visitors:'\uC21C \uBC29\uBB38\uC790', adm_s_male:'\uB0A8\uC131 \uBE44\uC728', adm_s_female:'\uC5EC\uC131 \uBE44\uC728',
+    adm_s_top:'\uAC00\uC7A5 \uB9CE\uC774 \uD074\uB9AD\uB41C \uBAA8\uB378', adm_s_save:'\uD1B5\uACC4 \uC800\uC7A5',
+    adm_stats_legal:'<b>\uCC38\uACE0:</b> \uC5B4\uB5A4 \uB3C4\uAD6C\uB3C4 \uAC1C\uBCC4 \uBC29\uBB38\uC790\uC758 \uC131\uBCC4\uC744 \uD569\uBC95\uC801\uC73C\uB85C \uC54C\uB824\uC904 \uC218 \uC5C6\uC5B4\uC694. GA4\uB294 \uD504\uB77C\uC774\uBC84\uC2DC \uAE30\uC900\uC744 \uB118\uB294 \uCD94\uC815\u00B7\uC9D1\uACC4 \uBE44\uC728\uB9CC \uC81C\uACF5\uD569\uB2C8\uB2E4.',
+    adm_auto_note:'<b>\uC0C8 \uBAA8\uB378\uC744 \uC2A4\uC2A4\uB85C \uCC3E\uC544\uB0B4\uB294 \uC644\uC804 \uC790\uB3D9\uD654\uB294 \uC815\uC801 \uC0AC\uC774\uD2B8\uC5D0\uC11C\uB294 \uBD88\uAC00\uB2A5\uD574\uC694</b> \u2014 \uB370\uC774\uD130 \uC18C\uC2A4\uC640 \uBE4C\uB4DC \uACFC\uC815\uC774 \uD544\uC694\uD574\uC694. \uB300\uC2E0, \uB9E4\uC8FC \uC2E4\uD589\uB418\uC5B4 \u201CWeekly model review\u201D \uC774\uC288\uB97C \uC5F4\uACE0 \uC790\uB3D9\uC73C\uB85C \uC774\uBA54\uC77C\uC744 \uBCF4\uB0B4\uB294 \uBB34\uB8CC GitHub Action\uC744 \uB123\uC5C8\uC5B4\uC694.',
+    adm_auto_how:'\uADF8 \uC774\uBA54\uC77C\uC744 \uBC1B\uC73C\uBA74: AI Match \u2192 \uAD00\uB9AC\uC790 \u2192 \uBAA8\uB378\uC5D0\uC11C \uBC14\uB010 \uC810\uC744 \uCD94\uAC00/\uC218\uC815\uD558\uACE0 <code>models.js</code>\uB97C \uB2E4\uC6B4\uB85C\uB4DC\uD574 \uC800\uC7A5\uC18C \uD30C\uC77C\uC744 \uAD50\uCCB4\uD55C \uB4A4 \uCEE4\uBC0B\uD558\uC138\uC694. \uC2A4\uCF00\uC904\uC740 <code>.github/workflows/weekly-model-review.yml</code>\uC774 \uC81C\uC5B4\uD569\uB2C8\uB2E4.',
+    saved:'\uC800\uC7A5\uB428 \u2713'
+  }
+};
+
+const TASK_ICONS = {chat:'\uD83D\uDCAC',writing:'\u270D\uFE0F',coding:'\u2328\uFE0F',images:'\uD83C\uDFA8',video:'\uD83C\uDFAC',music:'\uD83C\uDFB5',research:'\uD83D\uDD0D',design:'\u25C8'};
+
+const CFG = window.CONFIG || {};
+let MODELS = (window.MODELS || []).slice();
+let lang = CFG.defaultLang === 'ko' ? 'ko' : 'en';
+try{ const s=localStorage.getItem('aimatch_lang'); if(s) lang=s; }catch(e){}
+let step = 0;
+const answers = {task:null,budget:null,run:null,priority:null};
+let isAdmin = false;
+
+const $ = s=>document.querySelector(s);
+const $$ = s=>document.querySelectorAll(s);
+const t = ()=>I18N[lang];
+
+function applyStaticText(){
+  document.documentElement.lang = lang;
+  $$('[data-i18n]').forEach(el=>{
+    const k = el.getAttribute('data-i18n');
+    if(k==='hero_h1') return;
+    if(t()[k]!=null) el.innerHTML = t()[k];
+  });
+  $('[data-i18n="hero_h1"]').innerHTML = t().hero_h1_html;
+  const u=$('#updatedLine');
+  if(u) u.textContent = CFG.lastUpdated ? (t().updated_label + ' ' + CFG.lastUpdated) : '';
+  $('#langBtn').textContent = lang==='en' ? '\uD55C\uAD6D\uC5B4' : 'English';
+}
+
+function steps(){
+  return [
+    {key:'task',q:t().q1,hint:t().q1h,grid:true,opts:Object.keys(t().tasks).map(k=>({v:k,label:t().tasks[k],ico:TASK_ICONS[k]}))},
+    {key:'budget',q:t().q2,hint:t().q2h,opts:[{v:'free',label:t().q2a},{v:'paid',label:t().q2b}]},
+    {key:'run',q:t().q3,hint:t().q3h,opts:[{v:'online',label:t().q3a},{v:'local',label:t().q3b}]},
+    {key:'priority',q:t().q4,hint:t().q4h,optional:true,opts:[{v:'quality',label:t().q4a},{v:'speed',label:t().q4b},{v:'cost',label:t().q4c},{v:'creative',label:t().q4d}]}
+  ];
+}
+function renderStep(){
+  const S=steps(), cur=S[step];
+  $('#stepCount').textContent='STEP '+String(step+1).padStart(2,'0')+' / 04';
+  $('#dots').innerHTML=S.map((_,i)=>`<i class="${i<step?'done':i===step?'on':''}"></i>`).join('');
+  $('#qText').textContent=cur.q;
+  $('#qHint').textContent=cur.hint||'';
+  $('#qHint').style.display=cur.hint?'':'none';
+  const opts=$('#opts');
+  opts.innerHTML=cur.opts.map(o=>`<button class="opt" data-v="${o.v}">${o.ico?`<span class="ico">${o.ico}</span>`:''}<span>${o.label}</span></button>`).join('');
+  opts.querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose(cur.key,b.dataset.v));
+  $('#backBtn').style.visibility=step===0?'hidden':'visible';
+  $('#skipBtn').classList.toggle('hidden',!cur.optional);
+}
+function choose(key,val){ answers[key]=val; if(step<3){step++;renderStep();} else finish(); }
+function skip(){ answers.priority=null; finish(); }
+function back(){ if(step>0){step--;renderStep();$('#result').classList.add('hidden');} }
+
+function scoreModels(){
+  const a=answers;
+  let pool=MODELS.filter(m=>m.cats.includes(a.task));
+  if(a.budget==='free') pool=pool.filter(m=>m.free);
+  if(a.run==='local') pool=pool.filter(m=>m.oss);
+  let fallback=false;
+  if(pool.length===0){
+    fallback=true;
+    pool=MODELS.filter(m=>m.cats.includes(a.task));
+    if(a.budget==='free') pool=pool.filter(m=>m.free);
+    pool=pool.filter(m=>!m.oss);
+    if(pool.length===0) pool=MODELS.filter(m=>m.cats.includes(a.task));
+    if(pool.length===0) pool=MODELS.slice();
+  }
+  pool=pool.map(m=>{
+    let s=m.weight*2;
+    if(a.run==='local'&&m.oss) s+=14;
+    if(a.run==='online'&&!m.oss) s+=6;
+    if(a.priority&&m.strengths.includes(a.priority)) s+=16;
+    return {m,s};
+  }).sort((x,y)=>y.s-x.s);
+  return {list:pool.map(p=>p.m),fallback};
+}
+
+function badgesFor(m){
+  let h = m.free?`<span class="badge free">${t().free}</span>`:`<span class="badge">${t().paid}</span>`;
+  if(m.oss) h+=`<span class="badge oss">${t().oss}</span>`;
+  m.cats.slice(0,3).forEach(c=>h+=`<span class="badge">${t().cat[c]||c}</span>`);
+  return h;
+}
+function linkLabel(m){ return m.linkType==='download'?t().open_download:t().open_official; }
+
+function finish(){
+  const {list,fallback}=scoreModels();
+  const top=list[0], alts=list.slice(1,3);
+  const R=$('#result');
+  R.innerHTML=`
+    ${fallback?`<p class="note" style="max-width:none;margin:0 0 16px;"><b>${t().no_match_t}</b> ${t().no_match_s}</p>`:''}
+    <div class="match-card reveal">
+      <div class="match-tag">${t().your_match}</div>
+      <div class="match-name">${top.name}</div>
+      <div class="match-maker">${top.maker}</div>
+      <div class="match-blurb">${top.blurb[lang]}</div>
+      <div class="badges">${badgesFor(top)}</div>
+      <a class="btn btn-primary" href="${top.link}" target="_blank" rel="noopener sponsored" data-model="${top.name}" data-loc="match">${linkLabel(top)}</a>
+      ${alts.length?`<div class="alts"><h4>${t().why_alts}</h4><div class="alt-row">
+        ${alts.map(m=>`<a class="alt" href="${m.link}" target="_blank" rel="noopener sponsored" data-model="${m.name}" data-loc="alt"><b>${m.name}</b><span>${m.blurb[lang]}</span></a>`).join('')}
+      </div></div>`:''}
+    </div>
+    <button class="btn btn-ghost restart" id="restartBtn">${t().restart}</button>`;
+  R.querySelector('#restartBtn').onclick=restart;
+  R.classList.remove('hidden');
+  R.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function restart(){
+  step=0; answers.task=answers.budget=answers.run=answers.priority=null;
+  $('#result').classList.add('hidden'); renderStep();
+  $('#match').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+let activeFilter='all';
+function allCats(){
+  const set=new Set(); MODELS.forEach(m=>m.cats.forEach(c=>set.add(c)));
+  return ['chat','writing','coding','images','video','music','research','design','productivity'].filter(c=>set.has(c));
+}
+function renderFilters(){
+  const f=$('#filters');
+  f.innerHTML=`<button class="chip ${activeFilter==='all'?'active':''}" data-f="all">${t().filter_all}</button>`+
+    allCats().map(c=>`<button class="chip ${activeFilter===c?'active':''}" data-f="${c}">${t().cat[c]||c}</button>`).join('');
+  f.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{activeFilter=c.dataset.f;renderFilters();renderGrid();});
+}
+function renderGrid(){
+  const g=$('#grid');
+  const items=MODELS.filter(m=>activeFilter==='all'||m.cats.includes(activeFilter)).sort((a,b)=>b.weight-a.weight);
+  if(!items.length){ g.innerHTML=`<p class="empty">—</p>`; return; }
+  g.innerHTML=items.map(m=>`
+    <a class="card" href="${m.link}" target="_blank" rel="noopener sponsored" data-model="${m.name}" data-loc="browse">
+      <div class="top"><span class="nm">${m.name}</span><span class="mk">${m.maker}</span></div>
+      <div class="bl">${m.blurb[lang]}</div>
+      <div class="foot">
+        <div class="tags">${m.free?`<span class="mini free">${t().free}</span>`:''}${m.oss?`<span class="mini oss">${t().oss}</span>`:''}</div>
+        <span class="go">${m.linkType==='download'?'\u2193':'\u2197'}</span>
+      </div>
+    </a>`).join('');
+}
+
+function openAdmin(){ $('#admin').classList.add('show'); }
+function closeAdmin(){ $('#admin').classList.remove('show'); }
+function adminEnter(){
+  if($('#adminPw').value && $('#adminPw').value===CFG.adminPassword){
+    isAdmin=true; $('#adminLogin').classList.add('hidden'); $('#adminConsole').classList.remove('hidden');
+    renderAdminModels(); loadStats();
+  } else { const e=$('#adminPwErr'); e.textContent=t().adm_pw_err; e.style.display='block'; }
+}
+function renderAdminModels(){
+  $('#m_count').textContent=MODELS.length;
+  $('#m_list').innerHTML=MODELS.map((m,i)=>`<div class="pl"><span>${m.name} <span style="color:var(--muted);font-size:12px;">${m.maker}</span></span><button class="del" data-i="${i}">remove</button></div>`).join('');
+  $('#m_list').querySelectorAll('.del').forEach(b=>b.onclick=()=>{MODELS.splice(+b.dataset.i,1);renderAdminModels();renderFilters();renderGrid();});
+}
+function addModel(){
+  const name=$('#m_name').value.trim(); if(!name) return;
+  MODELS.push({
+    id:name.toLowerCase().replace(/[^a-z0-9]+/g,'-'), name, maker:$('#m_maker').value.trim(),
+    cats:$('#m_cats').value.split(',').map(s=>s.trim()).filter(Boolean),
+    free:$('#m_free').value==='true', oss:$('#m_oss').value==='true',
+    strengths:$('#m_strengths').value.split(',').map(s=>s.trim()).filter(Boolean),
+    weight:6, link:$('#m_link').value.trim(), linkType:$('#m_type').value,
+    blurb:{en:$('#m_blurb_en').value.trim(),ko:$('#m_blurb_ko').value.trim()}
+  });
+  ['m_name','m_maker','m_cats','m_link','m_strengths','m_blurb_en','m_blurb_ko'].forEach(id=>$('#'+id).value='');
+  renderAdminModels(); renderFilters(); renderGrid();
+}
+function modelsFileText(){
+  return '/* AI Match data file (generated by admin export) */\n'+
+    'window.CONFIG = '+JSON.stringify(CFG,null,2)+';\n\n'+
+    'window.MODELS = '+JSON.stringify(MODELS,null,2)+';\n';
+}
+function exportModels(){
+  const blob=new Blob([modelsFileText()],{type:'text/javascript'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download='models.js'; a.click(); URL.revokeObjectURL(url);
+}
+function copyModels(){
+  try{ navigator.clipboard.writeText(modelsFileText()); }catch(e){}
+  const b=$('#m_copy'); const o=b.textContent; b.textContent=t().saved; setTimeout(()=>b.textContent=o,1400);
+}
+function loadStats(){
+  try{ const s=JSON.parse(localStorage.getItem('aimatch_stats')||'{}');
+    $('#s_views').value=s.views||''; $('#s_visitors').value=s.visitors||'';
+    $('#s_male').value=s.male||''; $('#s_female').value=s.female||''; $('#s_top').value=s.top||'';
+  }catch(e){}
+}
+function saveStats(){
+  const s={views:$('#s_views').value,visitors:$('#s_visitors').value,male:$('#s_male').value,female:$('#s_female').value,top:$('#s_top').value};
+  try{ localStorage.setItem('aimatch_stats',JSON.stringify(s)); }catch(e){}
+  const b=$('#s_save'); const o=b.textContent; b.textContent=t().saved; setTimeout(()=>b.textContent=o,1400);
+}
+
+function trackClick(name, loc){
+  try{ gtag('event','select_model',{model_name:name, location:loc}); }catch(e){}
+}
+
+function setLang(l){
+  lang=l; try{localStorage.setItem('aimatch_lang',l);}catch(e){}
+  applyStaticText(); renderStep(); renderFilters(); renderGrid();
+  if(!$('#result').classList.contains('hidden')&&answers.task) finish();
+  if(isAdmin) renderAdminModels();
+}
+function init(){
+  applyStaticText(); renderStep(); renderFilters(); renderGrid();
+  $('#langBtn').onclick=()=>setLang(lang==='en'?'ko':'en');
+  $('#startBtn').onclick=()=>$('#match').scrollIntoView({behavior:'smooth'});
+  $('#backBtn').onclick=back; $('#skipBtn').onclick=skip;
+  const hdr=$('#hdr'); addEventListener('scroll',()=>hdr.classList.toggle('scrolled',scrollY>10),{passive:true});
+  document.addEventListener('click',function(e){
+    const a = e.target.closest && e.target.closest('a[data-model]');
+    if(a) trackClick(a.getAttribute('data-model'), a.getAttribute('data-loc'));
+  }, true);
+  $('#adminClose').onclick=closeAdmin; $('#adminEnter').onclick=adminEnter;
+  $('#adminPw').addEventListener('keydown',e=>{if(e.key==='Enter')adminEnter();});
+  if(location.hash==='#admin') openAdmin();
+  $('#m_add').onclick=addModel; $('#m_export').onclick=exportModels; $('#m_copy').onclick=copyModels; $('#s_save').onclick=saveStats;
+  $$('.tab').forEach(tb=>tb.onclick=()=>{
+    $$('.tab').forEach(x=>x.classList.remove('active')); tb.classList.add('active');
+    $$('.tabpane').forEach(p=>p.classList.add('hidden')); $('#pane-'+tb.dataset.tab).classList.remove('hidden');
+  });
+}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>

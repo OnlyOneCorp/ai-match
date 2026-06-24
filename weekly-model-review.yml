@@ -1,0 +1,48 @@
+name: Weekly model review
+
+# Runs every Monday at 09:00 KST (00:00 UTC). Change the cron if you like.
+# https://crontab.guru helps you read the schedule.
+on:
+  schedule:
+    - cron: "0 0 * * 1"
+  workflow_dispatch:   # also lets you run it manually from the Actions tab
+
+permissions:
+  issues: write
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open weekly review issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date().toISOString().slice(0, 10);
+            const title = `Weekly AI model review — ${today}`;
+            const body = [
+              "Time for the weekly check of the AImatch model list.",
+              "",
+              "GitHub will email you about this issue automatically (you're the repo owner).",
+              "",
+              "### What to do",
+              "1. Skim a couple of \"best AI tools / models\" roundups for anything new or renamed.",
+              "2. Open your site → footer **admin** → **Models** tab.",
+              "3. Add / edit / remove models, then click **Download models.js**.",
+              "4. Replace `models.js` in this repo with the new file and commit.",
+              "",
+              "### Quick sources to skim",
+              "- New flagship chatbots (OpenAI / Anthropic / Google / xAI)",
+              "- New image / video / music tools",
+              "- Any tool that shut down or changed its URL (fix broken links)",
+              "",
+              "Close this issue once you've updated (or confirmed nothing changed).",
+            ].join("\n");
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ["weekly-review"],
+            });
