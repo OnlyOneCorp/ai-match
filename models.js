@@ -15,7 +15,7 @@
 window.CONFIG = {
   adminPassword: "change-this-password", // change before deploy (client-side gate, not real security)
   adminEmail: "onlyonecorpceo@gmail.com",
-  ga4MeasurementId: "",                  // paste "G-XXXXXXX" to turn on real stats
+  ga4MeasurementId: "G-PCV8MSDT3K",                  // paste "G-XXXXXXX" to turn on real stats
   defaultLang: "en",
   lastUpdated: "2026-06-23"              // shown under the hero; bump it when you review models
 };
