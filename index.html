@@ -64,6 +64,9 @@
   .nav{display:flex;align-items:center;justify-content:space-between;height:56px;}
   .brand{font-weight:600;font-size:19px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px;}
   .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);display:inline-block;}
+  .home-link{margin-left:4px;padding-left:14px;border-left:1px solid var(--line);font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:-.01em;display:inline-flex;align-items:center;gap:4px;transition:color .2s;}
+  .home-link:hover{color:var(--ink);}
+  .home-link .arr{font-size:11px;opacity:.7;}
   .lang-btn{border:1px solid var(--line);background:transparent;color:var(--ink);padding:7px 15px;border-radius:980px;font-size:13px;font-weight:500;transition:background .2s,border-color .2s;}
   .lang-btn:hover{background:var(--bg-soft);}
 
@@ -197,7 +200,8 @@
 
 <header id="hdr">
   <div class="wrap nav">
-    <div class="brand"><span class="dot"></span>AI Match</div>
+    <!-- <div class="brand"><span class="dot"></span>AI Match</div> -->
+    <div class="brand"><span class="dot"></span>AI Match<a class="home-link" id="onlyoneLink" href="https://main.onlyonecorpceo.workers.dev/" aria-label="OnlyOne home">OnlyOne<span class="arr">&#8599;</span></a></div>
     <button class="lang-btn" id="langBtn">한국어</button>
   </div>
 </header>
